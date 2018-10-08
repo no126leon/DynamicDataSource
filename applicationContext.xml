@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+     http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+	<context:property-placeholder
+		location="classpath:database.properties,classpath:config.properties" />
+	<!-- 配置数据源，使用阿里巴巴的druid数据源(也可以使用c3p0或者dbcp，druid的性能更好点 ) -->
+	<bean id="dataSource" name="dataSource"
+		class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+		destroy-method="close">
+		<!-- 配置数据库连接参数,druid会根据url自动识别dialect和driverClass无须配置 -->
+		<property name="driverClassName"
+			value="${databaseDriverClassName}" />
+		<property name="url" value="${databaseUrl}" />
+		<property name="username" value="${databaseUsername}" />
+		<property name="password" value="${databasePasswd}" />
+		<property name="initialSize" value="5" />
+		<!-- 连接池中使用的最大连接数量，在druid中相当于maxPoolSize -->
+		<property name="maxActive" value="30" />
+		<!-- 获取连接的最大等待时间，单位毫秒 -->
+		<property name="maxWait" value="60000" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+		<property name="validationQuery" value="SELECT 1" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+	</bean>
+
+	<!-- 
+	<bean id="dynamicDataSource" class="com.teamface.datasource.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<entry key="defaultDataSource" value-ref="dataSource" />
+			</map>
+		</property>
+		<property name="defaultTargetDataSource" ref="dataSource" />
+	</bean>
+	 -->
+	 
+	<bean id="daoutil" class="com.teamface.common.DAOUtil">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<context:component-scan
+		base-package="com.teamface">
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Service" />
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<context:annotation-config />
+
+</beans> 
